@@ -11,7 +11,6 @@ from urllib.parse import urlparse
 
 import requests
 from flask import Flask, after_this_request, jsonify, request, send_file, send_from_directory
-from flask_cors import CORS
 from yt_dlp import YoutubeDL
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -19,7 +18,14 @@ DOWNLOAD_DIR = BASE_DIR / "downloads"
 DOWNLOAD_DIR.mkdir(exist_ok=True)
 
 app = Flask(__name__)
-CORS(app, origins="*")  # Allow all origins for GitHub Pages / local dev
+
+# Manual CORS headers (no flask-cors dependency needed)
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
 
 # In-memory jobs. For big production use Redis/Celery/RQ instead.
 JOBS = {}
@@ -479,3 +485,4 @@ if __name__ == "__main__":
     print(f"  Open: http://127.0.0.1:{port}")
     print(f"  Press Ctrl+C to stop the server\n")
     app.run(host="0.0.0.0", port=port, debug=debug)
+
