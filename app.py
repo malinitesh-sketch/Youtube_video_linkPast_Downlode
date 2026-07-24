@@ -471,7 +471,7 @@ def open_browser():
     import time
     time.sleep(1.5)
     port = int(os.environ.get("PORT", 5000))
-    url = f"https://127.0.0.1:{port}"
+    url = f"http://127.0.0.1:{port}"
     try:
         import webbrowser
         webbrowser.open(url)
@@ -483,7 +483,7 @@ def open_browser():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_DEBUG", "0") == "1"
-    use_https = os.environ.get("USE_HTTPS", "1") == "1"
+    use_https = os.environ.get("USE_HTTPS", "0") == "1"
     ssl_context = "adhoc" if use_https else None
 
     if os.environ.get("NO_BROWSER") != "1":
