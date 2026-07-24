@@ -1,0 +1,9 @@
+.venv
+.venv-2
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.git
+.gitignore

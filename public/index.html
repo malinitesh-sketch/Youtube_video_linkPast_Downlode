@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AnyDownloader - YouTube Downloader</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>▶</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;padding:24px;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:linear-gradient(145deg,#e7effc 0%,#eef4fb 50%,#f8f9fd 100%);color:#0f172a;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.app{width:100%;max-width:1140px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
+.card{background:#ffffff;border:1px solid rgba(148,163,184,.24);border-radius:24px;box-shadow:0 16px 40px rgba(15,23,42,.08),0 1px 3px rgba(15,23,42,.05);transition:transform .2s ease,box-shadow .2s ease;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-2px);box-shadow:0 24px 50px rgba(15,23,42,.12),0 1px 4px rgba(15,23,42,.06)}
+.main{padding:36px;overflow-y:auto;max-height:calc(100vh - 48px)}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#4f46e5,#6366f1);display:grid;place-items:center;font-size:20px;color:#fff;box-shadow:0 12px 24px rgba(79,70,229,.16)}
+h1{margin:0;font-size:clamp(28px,4vw,44px);line-height:1.15;letter-spacing:-.02em;color:#0f172a;font-weight:700}
+.subtitle{margin:0 0 28px;color:#475569;font-size:15px;line-height:1.75;max-width:660px}
+.input-row{display:flex;align-items:center;gap:8px;background:#f8fbff;border:1.5px solid #d2d8e4;border-radius:16px;padding:6px;margin-bottom:24px;transition:border-color .2s ease,box-shadow .2s ease}
+.input-row:focus-within{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+input,select{width:100%;min-width:0;border:0;outline:0;border-radius:12px;padding:14px 18px;font-size:15px;color:#0f172a;background:#ffffff;font-family:inherit;transition:background .2s ease,box-shadow .2s ease}
+input:focus,select:focus{background:#ffffff;box-shadow:0 0 0 3px rgba(79,70,229,.08)}
+input::placeholder{color:#94a3b8}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+button{border:0;cursor:pointer;border-radius:12px;padding:14px 22px;color:#fff;font-weight:600;font-size:14px;font-family:inherit;background:linear-gradient(135deg,#4f46e5,#6366f1);box-shadow:0 6px 18px rgba(79,70,229,.18);white-space:nowrap;transition:transform .2s ease,box-shadow .2s ease,filter .2s ease,background .2s ease;letter-spacing:.01em}
+button:hover{filter:brightness(1.08);transform:translateY(-2px);box-shadow:0 10px 22px rgba(79,70,229,.24)}
+button:active{transform:translateY(0);box-shadow:0 3px 10px rgba(79,70,229,.16)}
+button.secondary{background:#f8fafc;box-shadow:0 1px 3px rgba(15,23,42,.08);border:1.5px solid #dbe2f0;color:#1f2937}
+button.secondary:hover{background:#eef2ff;border-color:#c7d3f0;box-shadow:0 2px 10px rgba(15,23,42,.1);color:#111827}
+button:disabled{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
+label{display:block;font-size:12px;color:#64748b;margin-bottom:6px;font-weight:500;letter-spacing:.02em}
+.option-card{background:#f8fbff;border:1.5px solid #dbe2f0;border-radius:16px;padding:14px 16px;transition:border-color .2s,box-shadow .2s}
+.option-card:hover{border-color:#c7d3f0;box-shadow:0 0 0 3px rgba(79,70,229,.08)}
+.option-card:has(select:focus){border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0 22px}
+.check{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:#f8fafc;border:1.5px solid #e2e8f0;color:#334155;font-size:13px;font-weight:500;cursor:pointer;transition:background .2s,border-color .2s;user-select:none}
+.check:hover{background:#f1f5f9;border-color:#cbd5e1}
+.check:has(input:checked){background:#eef2ff;border-color:#4f46e5;color:#4338ca}
+.check input{width:auto;accent-color:#6366f1}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.preview{padding:28px;overflow-y:auto;max-height:calc(100vh - 48px)}
+.thumb{width:100%;aspect-ratio:16/9;border-radius:18px;background:#eef2ff;overflow:hidden;display:grid;place-items:center;border:1px solid #dbe2f0;margin-bottom:18px;position:relative}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.play{width:64px;height:48px;border-radius:14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:grid;place-items:center;transition:transform .25s,box-shadow .25s;box-shadow:0 6px 16px rgba(99,102,241,.2)}
+.play:hover{transform:scale(1.08);box-shadow:0 8px 24px rgba(99,102,241,.3)}
+.play:before{content:"";border-left:18px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:4px}
+.placeholder-img{width:100%;height:100%;display:grid;place-items:center;background:linear-gradient(145deg,#f1f5f9,#eef2ff);padding:40px}
+.placeholder-img svg{width:80px;height:80px;opacity:.5}
+.video-title{font-size:20px;margin-bottom:10px;color:#0f172a;font-weight:600}
+.meta{color:#64748b;line-height:1.65;font-size:13px;margin-bottom:16px}
+.status{margin-top:18px;padding:16px 18px;border-radius:14px;background:#f8fbff;border:1.5px solid #dbe2f0;color:#1e293b;line-height:1.6;font-size:13px;white-space:pre-wrap;min-height:48px}
+.progress-container{margin-top:16px;display:none}
+.progress-bar{width:100%;height:8px;border-radius:10px;background:#e2e8f0;overflow:hidden;position:relative}
+.progress-fill{height:100%;width:0%;border-radius:10px;background:linear-gradient(90deg,#4f46e5,#818cf8,#a78bfa);background-size:200% 100%;animation:shimmer 2s linear infinite;transition:width .4s cubic-bezier(.4,0,.2,1)}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.progress-text{display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-top:6px}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.pill{padding:6px 12px;border-radius:999px;background:#eef2ff;border:1px solid #dbe2f0;color:#334155;font-size:11px;font-weight:500}
+.note{margin-top:18px;color:#94a3b8;font-size:12px;line-height:1.65}
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+.toast{padding:14px 20px;border-radius:14px;background:rgba(15,23,42,.92);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:13px;font-weight:500;backdrop-filter:blur(16px);animation:slideIn .35s cubic-bezier(.16,1,.3,1);max-width:380px;line-height:1.45;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+.toast.success{border-color:#22c55e;box-shadow:0 8px 32px rgba(34,197,94,.15)}
+.toast.error{border-color:#ef4444;box-shadow:0 8px 32px rgba(239,68,68,.15)}
+.toast.info{border-color:#6366f1;box-shadow:0 8px 32px rgba(99,102,241,.15)}
+@keyframes slideIn{from{transform:translateX(120px);opacity:0}to{transform:translateX(0);opacity:1}}
+.history-btn{background:none;border:none;color:#6366f1;font-size:12px;font-weight:500;cursor:pointer;padding:6px 10px;border-radius:8px;margin-top:8px;display:inline-flex;align-items:center;gap:6px;transition:background .2s}
+.history-btn:hover{background:rgba(99,102,241,.08)}
+.history-panel{margin-top:16px;display:none;max-height:220px;overflow-y:auto;border-radius:12px;border:1px solid #dbe2f0;background:#ffffff}
+.history-panel.show{display:block}
+.history-panel::-webkit-scrollbar{width:4px}
+.history-panel::-webkit-scrollbar-track{background:transparent}
+.history-panel::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+.history-item{padding:12px 14px;background:#fff;border-bottom:1px solid #f1f5f9;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.history-item:last-child{border-bottom:none}
+.history-item .h-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#334155;font-weight:500}
+.history-item .h-time{color:#94a3b8;font-size:11px;white-space:nowrap}
+.history-item button{padding:4px 10px;font-size:11px;border-radius:8px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:960px){.app{grid-template-columns:1fr;gap:18px}body{padding:16px}.main{padding:24px}.preview{padding:20px}}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.checks{grid-template-columns:1fr}.input-row{flex-direction:column}.toast-container{right:12px;left:12px;bottom:12px}body{padding:12px}.main{padding:20px}h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+<div class="app">
+<main class="card main">
+<div class="brand"><div class="logo">▶</div><div><strong>AnyDownloader</strong><br><small style="color:#64748b">Paste link &rarr; Download &rarr; Done.</small></div></div>
+<h1>Download YouTube videos instantly</h1>
+<p class="subtitle">Paste a link, auto-load, choose quality, and download. Works for video, audio, and thumbnails.</p>
+<div class="input-row"><input id="urlInput" type="url" placeholder="Paste YouTube link here and press Enter..."><button id="loadBtn" onclick="loadVideo()">Load &amp; Fetch</button></div>
+<div class="grid">
+<div class="option-card"><label>Download Type</label><select id="downloadType" onchange="syncFormat()"><option value="video">Video + Audio</option><option value="audio">Audio Only</option><option value="thumbnail">Thumbnail</option></select></div>
+<div class="option-card"><label>Quality</label><select id="quality"><option value="best">Best Available</option><option value="2160">2160p / 4K</option><option value="1440">1440p / 2K</option><option value="1080">1080p HD</option><option value="720">720p HD</option><option value="480">480p</option><option value="360">360p</option></select></div>
+<div class="option-card"><label>Format</label><select id="format"><option value="mp4">MP4</option><option value="webm">WEBM</option></select></div>
+<div class="option-card"><label>Available Formats</label><select id="detected"><option>Load a video first</option></select></div>
+<div class="checks">
+<label class="check"><input type="checkbox" id="subtitles"> Subtitles</label>
+<label class="check"><input type="checkbox" id="thumbnailEmbed"> Embed thumbnail</label>
+</div>
+<div class="actions">
+<button id="downloadBtn" onclick="downloadSelected()">⬇ Download</button>
+<button class="secondary" onclick="setThumbDownload()">🖼 Thumbnail</button>
+<button class="secondary" onclick="clearAll()">✕ Clear</button>
+<button class="history-btn" id="historyToggle" onclick="toggleHistory()">📋 History</button>
+</div>
+<div id="historyPanel" class="history-panel"></div>
+<div id="status" class="status">👆 Paste a YouTube link and press Enter to get started.</div>
+<div class="progress-container" id="progressContainer">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="progress-text"><span id="progressPercent">0%</span><span id="progressEta"></span></div>
+</div>
+</main>
+<aside class="card preview">
+      <div class="thumb">
+        <img id="thumbImg" alt="Video thumbnail">
+        <div id="placeholder" class="placeholder-img">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        </div>
+      </div>
+<h2 class="video-title" id="videoTitle">No video loaded</h2>
+<p class="meta" id="videoMeta">Paste a YouTube link and click Load or press Enter.</p>
+<div class="pill-row"><span class="pill">MP4</span><span class="pill">WEBM</span><span class="pill">MP3</span><span class="pill">M4A</span><span class="pill">Thumbnail</span></div>
+</aside>
+</div>
+<script>
+var loaded=false,currentInfo=null,pollingActive=false;
+function showToast(m,t,d){t=t||'info';d=d||4000;var c=document.getElementById('toastContainer'),o=document.createElement('div');o.className='toast '+t;o.textContent=m;c.appendChild(o);setTimeout(function(){o.style.opacity='0';o.style.transition='opacity .3s';setTimeout(function(){o.remove()},300)},d)}
+function getHistory(){try{return JSON.parse(localStorage.getItem('ytDownloads')||'[]')}catch(e){return[]}}
+function addHistory(t,u,ty,q,f){var h=getHistory();h.unshift({title:t||u,url:u,type:ty,quality:q,format:f,time:new Date().toISOString()});if(h.length>20)h.length=20;localStorage.setItem('ytDownloads',JSON.stringify(h));renderHistory()}
+function renderHistory(){var p=document.getElementById('historyPanel'),items=getHistory(),html='';if(!items.length){p.innerHTML='<div style="color:#94a3b8;font-size:12px;padding:8px;">No downloads yet.</div>';return}for(var i=0;i<items.length;i++){var it=items[i];html+='<div class="history-item"><span class="h-title" title="'+it.title+'">'+it.title+'</span><span class="h-time">'+new Date(it.time).toLocaleDateString()+'</span><button class="secondary" onclick="reDownload('+i+')" style="padding:4px 8px;font-size:11px;">↻</button></div>'}p.innerHTML=html}
+function reDownload(i){var items=getHistory(),it=items[i];if(it){document.getElementById('urlInput').value=it.url;loadVideo();showToast('Loaded URL from history','info')}}
+function toggleHistory(){var p=document.getElementById('historyPanel');p.classList.toggle('show');if(p.classList.contains('show'))renderHistory()}
+function secondsToTime(s){if(!s)return'Unknown';var h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60);return h?h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'):m+':'+String(sec).padStart(2,'0')}
+function setBusy(b,t){document.getElementById('loadBtn').disabled=b;document.getElementById('downloadBtn').disabled=b;if(t){document.getElementById('status').textContent=t;document.getElementById('status').style.display='block'}}
+function updateProgress(p,e){var c=document.getElementById('progressContainer'),f=document.getElementById('progressFill'),pct=document.getElementById('progressPercent'),eta=document.getElementById('progressEta');if(p!==null&&p!==undefined){c.style.display='block';f.style.width=Math.min(p,100)+'%';pct.textContent=Math.round(p)+'%'}if(e)eta.textContent='ETA: '+e+'s';else eta.textContent=''}
+document.getElementById('urlInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();loadVideo()}})
+function syncFormat(){var t=document.getElementById('downloadType').value,fmt=document.getElementById('format'),q=document.getElementById('quality');fmt.innerHTML='';q.disabled=false;if(t==='video'){fmt.innerHTML='<option value="mp4">MP4</option><option value="webm">WEBM</option>';if(currentInfo&&currentInfo.formats&&currentInfo.formats.length){var b=currentInfo.formats[0],o=document.getElementById('quality').querySelector('option[value="'+b.height+'"]');if(o)document.getElementById('quality').value=b.height}}else if(t==='audio'){fmt.innerHTML='<option value="mp3">MP3</option><option value="m4a">M4A</option><option value="opus">OPUS</option><option value="wav">WAV</option>';q.value='best';q.disabled=true}else{fmt.innerHTML='<option value="jpg">JPG / Original</option>';q.value='best';q.disabled=true}}
+syncFormat()
+async function loadVideo(){var u=document.getElementById('urlInput').value.trim();if(!u){showToast('Please paste a YouTube link first.','error');return}if(!window.IS_SERVER_RUNNING){showToast('⚠ Server not detected! Make sure Flask is running on port 5000','error',8000);return}var b=document.getElementById('loadBtn');b.disabled=true;b.innerHTML='<span class="spinner"></span>Loading...';setBusy(true,'⏳ Fetching video info...');try{var r=await fetch(API_BASE+'/api/info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u})});if(!r.ok){var errText='';try{var ed=await r.json();errText=ed.error||ed.details||r.statusText}catch(e){errText='Server error '+r.status+'. Make sure server is running.'}throw new Error(errText)}var d=await r.json();loaded=true;currentInfo=d;document.getElementById('videoTitle').textContent=d.title||'YouTube Video';document.getElementById('videoMeta').innerHTML='<strong>'+(d.uploader||'Unknown')+'</strong> &middot; '+secondsToTime(d.duration)+'<br>ID: '+(d.id||'N/A');var img=document.getElementById('thumbImg'),ph=document.getElementById('placeholder');if(d.thumbnail){img.src=d.thumbnail;img.style.display='block';ph.style.display='none'}else{img.style.display='none';ph.style.display='grid'}var dt=document.getElementById('detected');dt.innerHTML='';if(d.formats&&d.formats.length){d.formats.forEach(function(f){var o=document.createElement('option');o.textContent=f.height+'p &middot; '+f.ext;dt.appendChild(o)});var bf=d.formats[0],qv=bf.height.toString();if(document.getElementById('quality').querySelector('option[value="'+qv+'"]'))document.getElementById('quality').value=qv}else dt.innerHTML='<option>No formats listed</option>';setBusy(false,'✅ Video loaded! Click Download to start.');showToast('Loaded: '+d.title,'success')}catch(err){loaded=false;setBusy(false,'❌ '+err.message);showToast('Error: '+err.message,'error')}finally{b.disabled=false;b.innerHTML='Load &amp; Fetch'}}
+async function downloadSelected(){var u=document.getElementById('urlInput').value.trim();if(!u){showToast('Please paste a YouTube link.','error');return}var p={url:u,type:document.getElementById('downloadType').value,quality:document.getElementById('quality').value,format:document.getElementById('format').value,subtitles:document.getElementById('subtitles').checked,embedThumbnail:document.getElementById('thumbnailEmbed').checked},b=document.getElementById('downloadBtn');b.disabled=true;b.innerHTML='<span class="spinner"></span>Downloading...';setBusy(true,'⏳ Starting download...');try{var s=await fetch(API_BASE+'/api/start-download',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}),sd=await s.json();if(!s.ok)throw new Error(sd.error||'Could not start download.');addHistory(currentInfo?currentInfo.title:u,u,p.type,p.quality,p.format);showToast('Download started!','success');pollProgress(sd.job_id)}catch(err){setBusy(false,'❌ '+err.message);showToast('Error: '+err.message,'error');b.disabled=false;b.innerHTML='⬇ Download'}}
+function pollProgress(j){pollingActive=true;function p(){if(!pollingActive)return;fetch(API_BASE+'/api/progress/'+j).then(function(r){return r.json()}).then(function(d){if(!d)throw new Error('Progress check failed.');var m=d.message||d.status||'Working...';if(d.percent!==null&&d.percent!==undefined){updateProgress(d.percent,d.eta);m+='\nProgress: '+d.percent+'%'}if(d.eta)m+='\nETA: '+d.eta+'s';if(d.filename)m+='\nFile: '+d.filename;document.getElementById('status').textContent=m;document.getElementById('status').style.display='block';if(d.status==='finished'){pollingActive=false;updateProgress(100);setBusy(false,'✅ Download ready! File downloading in your browser...');showToast('✅ '+(d.filename||'Download')+' is ready!','success',5000);document.getElementById('downloadBtn').disabled=false;document.getElementById('downloadBtn').innerHTML='⬇ Download';document.getElementById('progressPercent').textContent='100%';document.getElementById('progressEta').textContent='Complete!';window.location.href=API_BASE+(d.file_url||'/api/file/'+j);return}if(d.status==='error'){pollingActive=false;var em=(d.error||'Download failed')+(d.hint?'\n'+d.hint:'');setBusy(false,'❌ '+em);showToast('Download failed: '+em,'error',6000);document.getElementById('downloadBtn').disabled=false;document.getElementById('downloadBtn').innerHTML='⬇ Download';document.getElementById('progressContainer').style.display='none';return}setTimeout(p,1500)}).catch(function(err){pollingActive=false;setBusy(false,'❌ '+err.message);showToast('Error: '+err.message,'error');document.getElementById('downloadBtn').disabled=false;document.getElementById('downloadBtn').innerHTML='⬇ Download'})}p()}
+function setThumbDownload(){document.getElementById('downloadType').value='thumbnail';syncFormat();if(currentInfo&&currentInfo.thumbnail)showToast('Thumbnail mode selected','info')}
+function clearAll(){location.reload()}
+var API_BASE='http://127.0.0.1:5000';document.addEventListener('DOMContentLoaded',function(){renderHistory();document.getElementById('urlInput').focus();checkServer();autoPasteClipboard()})
+async function checkServer(){try{var r=await fetch(API_BASE+'/');window.IS_SERVER_RUNNING=r.ok;if(r.ok)showToast('✅ Connected to Flask backend at '+API_BASE,'success',3000)}catch(e){window.IS_SERVER_RUNNING=false;showToast('⚠ Server not running! Start Flask app by running RUN_ANYDOWLOADER.bat, then open http://127.0.0.1:5000','error',10000)}}
+async function autoPasteClipboard(){try{var t=await navigator.clipboard.readText();if(t&&t.trim()&&(t.includes('youtube.com')||t.includes('youtu.be'))){document.getElementById('urlInput').value=t.trim();showToast('📋 Link auto-pasted from clipboard! Press Enter to load.','info',3000)}}catch(e){}}
+document.getElementById('urlInput').addEventListener('paste',function(){setTimeout(function(){var v=document.getElementById('urlInput').value.trim();if(v&&(v.includes('youtube.com')||v.includes('youtu.be')))loadVideo()},100)})
+</script>
+</body>
+</html>
