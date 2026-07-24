@@ -471,7 +471,7 @@ def open_browser():
     import time
     time.sleep(1.5)
     port = int(os.environ.get("PORT", 5000))
-    url = f"http://127.0.0.1:{port}"
+    url = f"https://127.0.0.1:{port}"
     try:
         import webbrowser
         webbrowser.open(url)
@@ -483,12 +483,16 @@ def open_browser():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_DEBUG", "0") == "1"
+    use_https = os.environ.get("USE_HTTPS", "1") == "1"
+    ssl_context = "adhoc" if use_https else None
 
     if os.environ.get("NO_BROWSER") != "1":
         threading.Thread(target=open_browser, daemon=True).start()
 
     print(f"\n  AnyDownloader is running!")
     print(f"  Open: http://127.0.0.1:{port}")
+    if ssl_context:
+        print(f"  HTTPS: https://127.0.0.1:{port} (self-signed certificate; browser may show a warning)")
     print(f"  Press Ctrl+C to stop the server\n")
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    app.run(host="0.0.0.0", port=port, debug=debug, ssl_context=ssl_context)
 
