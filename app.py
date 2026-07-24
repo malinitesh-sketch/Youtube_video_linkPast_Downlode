@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 
 import requests
 from flask import Flask, after_this_request, jsonify, request, send_file, send_from_directory
+from flask_cors import CORS
 from yt_dlp import YoutubeDL
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -18,6 +19,7 @@ DOWNLOAD_DIR = BASE_DIR / "downloads"
 DOWNLOAD_DIR.mkdir(exist_ok=True)
 
 app = Flask(__name__)
+CORS(app, origins="*")  # Allow all origins for GitHub Pages / local dev
 
 # In-memory jobs. For big production use Redis/Celery/RQ instead.
 JOBS = {}
