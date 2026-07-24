@@ -1,14 +1,11 @@
-# UI Fix TODO
-
-## Issues Fixed
-1. `.card { overflow: hidden }` clips content - removed
-2. Missing `</div>` closing tag for `.brand` - fixed
-3. No scroll handling for long content - added `max-height` + `overflow-y` per card
-4. Preview card content may overflow - added scroll support
+# Fix Plan — Cross-Device & GitHub Pages Support
 
 ## Steps
-- [x] Plan approval
-- [x] Fix CSS: Remove `overflow:hidden` from `.card`, add scroll handling
-- [x] Fix HTML: Close `.brand` div properly
-- [x] Verify all sections visible
+
+- [x] Plan Approved
+- [x] 1. Add `/api/ping` health check endpoint to `app.py`
+- [x] 2. Update `index.html` — auto-detect API base from `window.location.origin`
+- [x] 3. Update `index.html` — smarter server detection with retry logic
+- [x] 4. Update `index.html` — improved "Set IP" UI for GitHub Pages & phones
+- [x] 5. Commit & push all changes to Git repository
 

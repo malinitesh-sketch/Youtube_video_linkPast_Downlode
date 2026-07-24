@@ -460,6 +460,12 @@ def api_download():
         }), 500
 
 
+@app.route("/api/ping")
+def api_ping():
+    """Lightweight health check for cross-device detection."""
+    return jsonify({"status": "ok", "server": "AnyDownloader"}), 200
+
+
 def open_browser():
     """Open browser after a short delay so the server is ready."""
     import time
