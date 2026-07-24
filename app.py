@@ -14,11 +14,10 @@ from flask import Flask, after_this_request, jsonify, request, send_file, send_f
 from yt_dlp import YoutubeDL
 
 BASE_DIR = Path(__file__).resolve().parent
-PUBLIC_DIR = BASE_DIR / "public"
 DOWNLOAD_DIR = BASE_DIR / "downloads"
 DOWNLOAD_DIR.mkdir(exist_ok=True)
 
-app = Flask(__name__, static_folder=str(PUBLIC_DIR), static_url_path="")
+app = Flask(__name__)
 
 # In-memory jobs. For big production use Redis/Celery/RQ instead.
 JOBS = {}
@@ -310,7 +309,7 @@ def run_download_job(job_id: str, data: dict):
 
 @app.route("/")
 def home():
-    return send_from_directory(PUBLIC_DIR, "index.html")
+    return send_from_directory(BASE_DIR, "index.html")
 
 
 @app.route("/api/info", methods=["POST"])
