@@ -14,8 +14,6 @@ from flask import Flask, after_this_request, jsonify, request, send_file, send_f
 from yt_dlp import YoutubeDL
 
 BASE_DIR = Path(__file__).resolve().parent
-DOWNLOAD_DIR = BASE_DIR / "downloads"
-DOWNLOAD_DIR.mkdir(exist_ok=True)
 
 app = Flask(__name__)
 
@@ -264,9 +262,8 @@ def run_download_job(job_id: str, data: dict):
     include_subtitles = bool(data.get("subtitles"))
     embed_thumbnail = bool(data.get("embedThumbnail"))
 
-    job_dir = DOWNLOAD_DIR / job_id
-    job_dir.mkdir(parents=True, exist_ok=True)
-    set_job(job_id, status="starting", percent=0, message="Starting download...", file_url=None)
+    job_dir = Path(tempfile.mkdtemp(prefix=f"yt_{job_id[:8]}_", dir=tempfile.gettempdir()))
+    set_job(job_id, status="starting", percent=0, message="Starting download...", file_url=None, temp_dir=str(job_dir))
 
     try:
         if kind == "thumbnail":
@@ -404,6 +401,18 @@ def api_file(job_id):
     file_path = Path(job["file_path"])
     if not file_path.exists():
         return jsonify({"error": "File no longer exists on server."}), 404
+
+    temp_dir = job.get("temp_dir")
+
+    @after_this_request
+    def cleanup(response):
+        if temp_dir:
+            try:
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            except Exception:
+                pass
+        return response
+
     return send_file(file_path, as_attachment=True, download_name=job.get("filename") or file_path.name)
 
 
