@@ -89,11 +89,21 @@ def _yt_cookies_path() -> str | None:
 
 
 def _build_cookie_opts(opts: dict) -> None:
-    opts["remote_components"] = ["ejs:github"]
-    opts["js_runtimes"] = {"node": {}}
+    try:
+        import shutil
+        if shutil.which("node") or shutil.which("nodejs") or shutil.which("deno"):
+            opts["js_runtimes"] = {"node": {}}
+    except Exception:
+        pass
+
+    try:
+        opts["remote_components"] = ["ejs:github"]
+    except Exception:
+        pass
+
     opts["extractor_args"] = {
         "youtube": {
-            "player_client": ["web", "mweb", "android"],
+            "player_client": ["web", "mweb", "android", "ios"],
         }
     }
     cookie_path = _yt_cookies_path()
@@ -359,6 +369,41 @@ def api_info():
             print(f"[yt-dlp:/api/info] url={url}\nerror={err}\nclassified={short_msg}\nhint={hint}", flush=True)
         except Exception:
             pass
+
+        # Primary extraction failed. Attempt clean fallback extraction without custom options.
+        try:
+            fallback_opts = {
+                "quiet": True,
+                "no_warnings": True,
+                "skip_download": True,
+                "noplaylist": True,
+                "socket_timeout": 30,
+            }
+            with YoutubeDL(fallback_opts) as fallback_ydl:
+                info = fallback_ydl.extract_info(url, download=False)
+                formats = []
+                seen = set()
+                for f in info.get("formats", []):
+                    height = f.get("height")
+                    ext = f.get("ext")
+                    if height and ext:
+                        key = (height, ext)
+                        if key not in seen:
+                            seen.add(key)
+                            formats.append({"height": height, "ext": ext})
+                formats = sorted(formats, key=lambda x: x["height"], reverse=True)[:40]
+                return jsonify({
+                    "id": info.get("id"),
+                    "title": info.get("title"),
+                    "uploader": info.get("uploader"),
+                    "duration": info.get("duration"),
+                    "thumbnail": info.get("thumbnail"),
+                    "webpage_url": info.get("webpage_url"),
+                    "formats": formats,
+                })
+        except Exception:
+            pass
+
         payload = {"error": short_msg, "details": err}
         if hint:
             payload["hint"] = hint
