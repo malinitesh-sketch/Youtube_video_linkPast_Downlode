@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 cd /d "%~dp0"
 title AnyDownloader - YouTube Downloader
 
@@ -9,25 +9,41 @@ echo    Paste a link, download instantly!
 echo ==========================================
 echo.
 
-:: Check Python
-where python >nul 2>nul
-if errorlevel 1 (
-    where py >nul 2>nul
-    if errorlevel 1 (
-        echo ERROR: Python is not installed.
-        start https://www.python.org/downloads/
-        pause
-        exit /b 1
-    )
-    set PYTHON=py
-) else (
-    set PYTHON=python
+:: Detect valid Python executable (prefer Windows Python Launcher 'py', avoid broken WindowsApps alias)
+set PYTHON=
+
+py -3 --version >nul 2>&1
+if !errorlevel! equ 0 (
+    set PYTHON=py -3
+    goto :PYTHON_FOUND
 )
 
-:: Create virtual environment if not exists
-if not exist ".venv\" (
-    echo [1/3] Creating virtual environment...
-    %PYTHON% -m venv .venv
+py --version >nul 2>&1
+if !errorlevel! equ 0 (
+    set PYTHON=py
+    goto :PYTHON_FOUND
+)
+
+python -c "import sys; sys.exit(0)" >nul 2>&1
+if !errorlevel! equ 0 (
+    set PYTHON=python
+    goto :PYTHON_FOUND
+)
+
+echo ERROR: Python is not installed or not working properly.
+echo Please download and install Python from: https://www.python.org/downloads/
+echo Make sure to check "Add Python to PATH" during installation.
+start https://www.python.org/downloads/
+pause
+exit /b 1
+
+:PYTHON_FOUND
+echo [1/3] Found Python launcher: !PYTHON!
+
+:: Create virtual environment if it does not exist
+if not exist ".venv\Scripts\python.exe" (
+    echo [1/3] Creating Python virtual environment...
+    !PYTHON! -m venv .venv
     if errorlevel 1 (
         echo ERROR: Failed to create virtual environment.
         pause
@@ -35,11 +51,10 @@ if not exist ".venv\" (
     )
 )
 
-:: Activate and install requirements
-echo [2/3] Installing dependencies...
-call .venv\Scripts\activate.bat
-%PYTHON% -m pip install --upgrade pip -q
-pip install -r requirements.txt -q
+:: Install / update requirements using virtual environment's python directly
+echo [2/3] Checking dependencies...
+".venv\Scripts\python.exe" -m pip install --upgrade pip -q
+".venv\Scripts\python.exe" -m pip install -r requirements.txt -q
 
 :: Check ffmpeg
 where ffmpeg >nul 2>nul
@@ -50,7 +65,7 @@ if errorlevel 1 (
     echo.
 )
 
-:: Launch
+:: Launch backend using virtual environment python
 echo [3/3] Starting server...
 echo.
 echo ==========================================
@@ -59,7 +74,9 @@ echo    📺 Your browser will open automatically
 echo    🌐 http://127.0.0.1:5000
 echo ==========================================
 echo.
-python app.py
+
+".venv\Scripts\python.exe" app.py
 
 pause
+
 

@@ -1,30 +1,47 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 cd /d "%~dp0"
 echo ==========================================
 echo YouTube Downloader Local App - Windows
- echo ==========================================
+echo ==========================================
 
-where python >nul 2>nul
-if errorlevel 1 (
-  echo ERROR: Python is not installed or not added to PATH.
-  echo Install Python from https://www.python.org/downloads/
-  pause
-  exit /b 1
+:: Detect valid Python executable
+set PYTHON=
+
+py -3 --version >nul 2>&1
+if !errorlevel! equ 0 (
+    set PYTHON=py -3
+    goto :PYTHON_FOUND
 )
 
-if not exist .venv (
+py --version >nul 2>&1
+if !errorlevel! equ 0 (
+    set PYTHON=py
+    goto :PYTHON_FOUND
+)
+
+python -c "import sys; sys.exit(0)" >nul 2>&1
+if !errorlevel! equ 0 (
+    set PYTHON=python
+    goto :PYTHON_FOUND
+)
+
+echo ERROR: Python is not installed or not working properly.
+echo Install Python from https://www.python.org/downloads/
+pause
+exit /b 1
+
+:PYTHON_FOUND
+if not exist ".venv\Scripts\python.exe" (
   echo Creating Python virtual environment...
-  python -m venv .venv
+  !PYTHON! -m venv .venv
 )
-
-call .venv\Scripts\activate.bat
 
 echo Upgrading pip...
-python -m pip install --upgrade pip
+".venv\Scripts\python.exe" -m pip install --upgrade pip
 
 echo Installing required packages...
-pip install -r requirements.txt
+".venv\Scripts\python.exe" -m pip install -r requirements.txt
 
 where ffmpeg >nul 2>nul
 if errorlevel 1 (
@@ -40,5 +57,5 @@ echo Starting server...
 echo Open this link in your browser:
 echo http://127.0.0.1:5000
 echo.
-python app.py
+".venv\Scripts\python.exe" app.py
 pause

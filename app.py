@@ -1,4 +1,4 @@
-﻿import os
+import os
 import re
 import shutil
 import tempfile
@@ -89,16 +89,16 @@ def _yt_cookies_path() -> str | None:
 
 
 def _build_cookie_opts(opts: dict) -> None:
-    cookie_path = _yt_cookies_path()
-    if not cookie_path:
-        return
-
-    opts["cookiefile"] = cookie_path
+    opts["remote_components"] = ["ejs:github"]
+    opts["js_runtimes"] = {"node": {}}
     opts["extractor_args"] = {
         "youtube": {
-            "player_client": ["web"],
+            "player_client": ["web", "mweb", "android"],
         }
     }
+    cookie_path = _yt_cookies_path()
+    if cookie_path:
+        opts["cookiefile"] = cookie_path
 
 
 def _classify_ydl_error(msg: str) -> tuple[str, str | None]:
@@ -232,6 +232,7 @@ def build_ydl_opts(job_id: str, job_dir: Path, kind: str, quality: str, file_for
     if postprocessors:
         ydl_opts["postprocessors"] = postprocessors
 
+    _build_cookie_opts(ydl_opts)
     return ydl_opts
 
 

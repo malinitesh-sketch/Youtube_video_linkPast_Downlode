@@ -5,9 +5,9 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# ffmpeg is required for MP3 conversion and high-quality video/audio merge
+# ffmpeg & nodejs are required for video merging and JS challenge solving
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg ca-certificates \
+    && apt-get install -y --no-install-recommends ffmpeg nodejs ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .

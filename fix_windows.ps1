@@ -36,21 +36,20 @@ if (Get-Command py -ErrorAction SilentlyContinue) {
 }
 
 Write-Host "Creating virtual environment..." -ForegroundColor Green
-& $pythonCmd -m venv .venv
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: venv create failed. Try installing Python 3.12 or 3.11, then run again." -ForegroundColor Red
-    Read-Host "Press Enter to exit"
-    exit 1
+if (-not (Test-Path ".\.venv\Scripts\python.exe")) {
+    & $pythonCmd -m venv .venv
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: venv create failed." -ForegroundColor Red
+        Read-Host "Press Enter to exit"
+        exit 1
+    }
 }
 
-Write-Host "Activating virtual environment..." -ForegroundColor Green
-& ".\.venv\Scripts\Activate.ps1"
-
 Write-Host "Upgrading pip..." -ForegroundColor Green
-python -m pip install --upgrade pip
+& ".\.venv\Scripts\python.exe" -m pip install --upgrade pip
 
 Write-Host "Installing packages..." -ForegroundColor Green
-python -m pip install -r requirements.txt
+& ".\.venv\Scripts\python.exe" -m pip install -r requirements.txt
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: package install failed." -ForegroundColor Red
     Read-Host "Press Enter to exit"
@@ -58,11 +57,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Checking system..." -ForegroundColor Green
-python check_system.py
+& ".\.venv\Scripts\python.exe" check_system.py
 
 Write-Host "" 
 Write-Host "Starting server. Open browser: http://127.0.0.1:5000" -ForegroundColor Cyan
 Write-Host "Keep this window open." -ForegroundColor Yellow
-python app.py
+& ".\.venv\Scripts\python.exe" app.py
 
 Read-Host "Press Enter to exit"
