@@ -103,7 +103,7 @@ def _build_cookie_opts(opts: dict) -> None:
 
     opts["extractor_args"] = {
         "youtube": {
-            "player_client": ["web", "mweb", "android", "ios"],
+            "player_client": ["android", "ios", "mweb", "web"],
         }
     }
     cookie_path = _yt_cookies_path()
@@ -114,13 +114,13 @@ def _build_cookie_opts(opts: dict) -> None:
 def _classify_ydl_error(msg: str) -> tuple[str, str | None]:
     m = (msg or "").lower()
     if any(s in m for s in ["age-restricted", "age restriction", "this video may be inappropriate"]):
-        return "Age-restricted video.", "Try again with cookies enabled (cookies.txt) and run the server without changing networks."
+        return "Age-restricted video.", "Try again with cookies enabled (cookies.txt) or download lower quality formats."
     if any(s in m for s in ["private video", "this video is private", "unavailable"]):
         return "Video is unavailable/private.", "The link might be private, removed, or not accessible from your region."
     if any(s in m for s in ["sign in", "login", "consent"]):
-        return "Video requires sign-in/consent.", "Cookies are usually required for these."
+        return "Video requires sign-in/consent.", "Try another link or enable cookies."
     if any(s in m for s in ["http error 429", "429 too many requests", "too many requests", "rate limit"]):
-        return "Rate limited (HTTP 429).", "Wait a few minutes and try again, or disable subtitles/download quickly."
+        return "Rate limited (HTTP 429).", "Wait a few minutes and try again."
     if any(s in m for s in ["ffmpeg", "not found"]):
         return "ffmpeg is missing.", "Install ffmpeg and ensure it is in PATH. See README."
     if any(s in m for s in ["requested format is not available"]):
@@ -138,8 +138,18 @@ def ydl_info(url: str):
         "retries": 10,
     }
     _build_cookie_opts(opts)
-    with YoutubeDL(opts) as ydl:
-        return ydl.extract_info(url, download=False)
+    try:
+        with YoutubeDL(opts) as ydl:
+            return ydl.extract_info(url, download=False)
+    except Exception as primary_err:
+        for fallback_clients in [["android", "mweb"], ["mweb", "web"], ["tv", "web"], ["web"]]:
+            try:
+                opts["extractor_args"] = {"youtube": {"player_client": fallback_clients}}
+                with YoutubeDL(opts) as ydl:
+                    return ydl.extract_info(url, download=False)
+            except Exception:
+                continue
+        raise primary_err
 
 
 def format_selector(kind: str, quality: str, file_format: str) -> str:
